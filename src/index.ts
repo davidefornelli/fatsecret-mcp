@@ -56,6 +56,11 @@ class FatSecretMCPServer {
       {
         name: "fatsecret-mcp-server",
         version: "0.1.0",
+      },
+      {
+        capabilities: {
+          tools: {},
+        },
       }
     );
 
@@ -502,13 +507,17 @@ class FatSecretMCPServer {
                   type: "string",
                   description: "The FatSecret food ID",
                 },
+                foodEntryName: {
+                  type: "string",
+                  description: "The name of the food entry (e.g. 'Instant Oatmeal')",
+                },
                 servingId: {
                   type: "string",
                   description: "The serving ID for the food",
                 },
                 quantity: {
                   type: "number",
-                  description: "Quantity of the serving",
+                  description: "Number of units of the serving (e.g. 1 for '1 cup', 2 for '2 tbsp')",
                 },
                 mealType: {
                   type: "string",
@@ -520,7 +529,7 @@ class FatSecretMCPServer {
                   description: "Date in YYYY-MM-DD format (default: today)",
                 },
               },
-              required: ["foodId", "servingId", "quantity", "mealType"],
+          required: ["foodId", "servingId", "quantity", "mealType"],
             },
           },
           {
@@ -938,12 +947,38 @@ class FatSecretMCPServer {
     }
 
     try {
+      let foodEntryName = args.foodEntryName;
+
+      if (!foodEntryName) {
+        try {
+          const foodParams = {
+            method: "food.get",
+            food_id: args.foodId,
+            format: "json",
+          };
+
+          const foodResponse = await this.makeApiRequest(
+            "GET",
+            this.baseUrl,
+            foodParams,
+            false
+          );
+
+          if (foodResponse && foodResponse.food && foodResponse.food.food_name) {
+            foodEntryName = foodResponse.food.food_name;
+          }
+        } catch (error) {
+          // If fetching fails, we'll proceed with undefined and let the API error out if it's required
+        }
+      }
+
       const date = this.dateToFatSecretFormat(args.date);
       const params = {
         method: "food_entry.create",
         food_id: args.foodId,
+        food_entry_name: foodEntryName,
         serving_id: args.servingId,
-        quantity: args.quantity.toString(),
+        number_of_units: args.quantity.toString(),
         meal: args.mealType,
         date: date,
         format: "json",
