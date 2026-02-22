@@ -533,6 +533,55 @@ class FatSecretMCPServer {
             },
           },
           {
+            name: "update_food_entry",
+            description: "Update a food entry in the user's diary",
+            inputSchema: {
+              type: "object",
+              properties: {
+                foodEntryId: {
+                  type: "string",
+                  description: "The FatSecret food entry ID",
+                },
+                foodId: {
+                  type: "string",
+                  description: "The FatSecret food ID",
+                },
+                foodEntryName: {
+                  type: "string",
+                  description: "The name of the food entry",
+                },
+                servingId: {
+                  type: "string",
+                  description: "The serving ID for the food",
+                },
+                quantity: {
+                  type: "number",
+                  description: "Number of units of the serving",
+                },
+                mealType: {
+                  type: "string",
+                  description: "Meal type (breakfast, lunch, dinner, snack)",
+                  enum: ["breakfast", "lunch", "dinner", "snack"],
+                },
+              },
+              required: ["foodEntryId"],
+            },
+          },
+          {
+            name: "delete_food_entry",
+            description: "Delete a food entry from the user's diary",
+            inputSchema: {
+              type: "object",
+              properties: {
+                foodEntryId: {
+                  type: "string",
+                  description: "The FatSecret food entry ID",
+                },
+              },
+              required: ["foodEntryId"],
+            },
+          },
+          {
             name: "check_auth_status",
             description: "Check if the user is authenticated with FatSecret",
             inputSchema: {
@@ -581,6 +630,10 @@ class FatSecretMCPServer {
           return await this.handleGetUserFoodEntries(request.params.arguments);
         case "add_food_entry":
           return await this.handleAddFoodEntry(request.params.arguments);
+        case "update_food_entry":
+          return await this.handleUpdateFoodEntry(request.params.arguments);
+        case "delete_food_entry":
+          return await this.handleDeleteFoodEntry(request.params.arguments);
         case "check_auth_status":
           return await this.handleCheckAuthStatus(request.params.arguments);
         case "get_weight_month":
@@ -1005,6 +1058,96 @@ class FatSecretMCPServer {
       throw new McpError(
         ErrorCode.InternalError,
         `Failed to add food entry: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  private async handleUpdateFoodEntry(args: any) {
+    if (!this.config.accessToken || !this.config.accessTokenSecret) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        "User authentication required. Please complete the OAuth flow first.",
+      );
+    }
+
+    try {
+      const params: any = {
+        method: "food_entry.edit",
+        food_entry_id: args.foodEntryId,
+        format: "json",
+      };
+
+      if (args.foodId) params.food_id = args.foodId;
+      if (args.foodEntryName) params.food_entry_name = args.foodEntryName;
+      if (args.servingId) params.serving_id = args.servingId;
+      if (args.quantity) params.number_of_units = args.quantity.toString();
+      if (args.mealType) params.meal = args.mealType;
+
+      const response = await this.makeApiRequest(
+        "POST",
+        this.baseUrl,
+        params,
+        true,
+      );
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Food entry updated successfully!\n\n${
+              JSON.stringify(response, null, 2)
+            }`,
+          },
+        ],
+      };
+    } catch (error) {
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to update food entry: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      );
+    }
+  }
+
+  private async handleDeleteFoodEntry(args: any) {
+    if (!this.config.accessToken || !this.config.accessTokenSecret) {
+      throw new McpError(
+        ErrorCode.InvalidRequest,
+        "User authentication required. Please complete the OAuth flow first.",
+      );
+    }
+
+    try {
+      const params = {
+        method: "food_entry.delete",
+        food_entry_id: args.foodEntryId,
+        format: "json",
+      };
+
+      const response = await this.makeApiRequest(
+        "POST",
+        this.baseUrl,
+        params,
+        true,
+      );
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Food entry deleted successfully!\n\n${
+              JSON.stringify(response, null, 2)
+            }`,
+          },
+        ],
+      };
+    } catch (error) {
+      throw new McpError(
+        ErrorCode.InternalError,
+        `Failed to delete food entry: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       );
