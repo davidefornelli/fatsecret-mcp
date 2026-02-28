@@ -1,0 +1,4 @@
+fastmcp<4,>=3
+
+[dev]
+pytest<9,>=8

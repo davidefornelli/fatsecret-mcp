@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fatsecret-mcp-python"
+version = "0.1.0"
+description = "Python FastMCP server for the FatSecret API"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "fastmcp>=3,<4",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

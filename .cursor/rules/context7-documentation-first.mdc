@@ -1,0 +1,9 @@
+---
+description: Require Context7 documentation lookup before library usage
+alwaysApply: true
+---
+
+# Context7 Documentation First
+
+- Use Context7 when looking up library or framework documentation before implementing or changing code that depends on external APIs.
+- Prefer Context7 examples and references over memory-only implementation for third-party libraries.

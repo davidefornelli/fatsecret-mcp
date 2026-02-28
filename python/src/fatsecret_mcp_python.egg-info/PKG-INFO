@@ -1,0 +1,20 @@
+Metadata-Version: 2.4
+Name: fatsecret-mcp-python
+Version: 0.1.0
+Summary: Python FastMCP server for the FatSecret API
+Requires-Python: <3.12,>=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastmcp<4,>=3
+Provides-Extra: dev
+Requires-Dist: pytest<9,>=8; extra == "dev"
+
+# FatSecret MCP Python Port
+
+Python 3.11 port of the FatSecret MCP server using FastMCP v3.
+
+## Quick Start
+
+```bash
+python -m pip install -e ".[dev]"
+python -m pytest -q
+```

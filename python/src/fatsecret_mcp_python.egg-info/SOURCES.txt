@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+src/fatsecret_mcp/__init__.py
+src/fatsecret_mcp/server.py
+src/fatsecret_mcp_python.egg-info/PKG-INFO
+src/fatsecret_mcp_python.egg-info/SOURCES.txt
+src/fatsecret_mcp_python.egg-info/dependency_links.txt
+src/fatsecret_mcp_python.egg-info/requires.txt
+src/fatsecret_mcp_python.egg-info/top_level.txt
+tests/test_server_smoke.py

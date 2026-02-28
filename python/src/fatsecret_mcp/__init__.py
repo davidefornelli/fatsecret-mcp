@@ -1,0 +1,1 @@
+"""FatSecret MCP Python package."""

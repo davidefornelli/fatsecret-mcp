@@ -1,0 +1,10 @@
+---
+description: Define Python standards for the ported project
+alwaysApply: true
+---
+
+# Python Port Standards
+
+- Use Python 3.11 for all Python code in this repository.
+- Prefer explicit type hints for public functions and module boundaries.
+- Use `pytest` for testing Python code and keep tests near the Python project.

@@ -1,0 +1,9 @@
+---
+description: Standardize Python MCP implementation on FastMCP v3
+alwaysApply: true
+---
+
+# Python MCP Framework
+
+- Use FastMCP v3 as the MCP framework for Python implementation.
+- Do not introduce alternative MCP Python frameworks unless explicitly requested.

@@ -1,3 +1,8 @@
 .env
 dist/
 node_modules
+.worktrees/
+python/.venv/
+python/.pytest_cache/
+__pycache__/
+*.pyc
