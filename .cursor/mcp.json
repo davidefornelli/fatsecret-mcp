@@ -1,0 +1,8 @@
+{
+    "mcpServers": {
+      "fatsecret": {
+        "command": "/home/david/repos/github/davidefornelli/mcp-fatsecret-py/python/.venv/bin/python",
+        "args": ["-m", "fatsecret_mcp.server"]
+      }
+    }
+  }
