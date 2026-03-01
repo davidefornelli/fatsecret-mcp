@@ -248,3 +248,12 @@ def create_server() -> FastMCP:
             raise ToolError(f"Failed to get weight entries for month: {e}") from e
 
     return mcp
+
+
+def main() -> None:
+    """Entrypoint for the fatsecret-mcp CLI."""
+    create_server().run()
+
+
+if __name__ == "__main__":
+    main()
