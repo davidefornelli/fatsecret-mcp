@@ -21,6 +21,10 @@ def test_server_has_check_auth_status_tool():
     assert "check_auth_status" in _tool_names()
 
 
+def test_server_has_logout_tool():
+    assert "logout" in _tool_names()
+
+
 def test_server_has_start_oauth_flow_tool():
     assert "start_oauth_flow" in _tool_names()
 
@@ -33,6 +37,7 @@ def test_server_has_all_twelve_tools():
     names = _tool_names()
     expected = {
         "set_credentials",
+        "logout",
         "start_oauth_flow",
         "complete_oauth_flow",
         "search_foods",

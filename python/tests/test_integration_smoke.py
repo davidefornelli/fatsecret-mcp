@@ -1,4 +1,4 @@
-"""Integration smoke test: server starts and exposes all 12 tools."""
+"""Integration smoke test: server starts and exposes all tools (including logout)."""
 
 import asyncio
 
@@ -10,8 +10,9 @@ def test_server_lists_all_twelve_tools():
         mcp = create_server()
         tools = await mcp.list_tools()
         names = [t.name for t in tools]
-        assert len(names) == 12
+        assert len(names) == 13
         assert "set_credentials" in names
+        assert "logout" in names
         assert "get_weight_month" in names
 
     asyncio.run(_check())

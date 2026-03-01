@@ -47,6 +47,17 @@ def create_server() -> FastMCP:
         return ToolResult(content=[TextContent(type="text", text=text)])
 
     @mcp.tool()
+    def logout() -> ToolResult:
+        """Clear stored OAuth tokens and log out the current user. API credentials are kept so you can log in again."""
+        cfg = load_config()
+        cfg["accessToken"] = ""
+        cfg["accessTokenSecret"] = ""
+        cfg["userId"] = ""
+        save_config(cfg)
+        msg = "Logged out successfully. OAuth tokens have been cleared. Use start_oauth_flow and complete_oauth_flow to sign in again."
+        return ToolResult(content=[TextContent(type="text", text=msg)])
+
+    @mcp.tool()
     def start_oauth_flow(callbackUrl: str = "oob") -> ToolResult:
         """Start the 3-legged OAuth flow to get user authorization."""
         cfg = load_config()
