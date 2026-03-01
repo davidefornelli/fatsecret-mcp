@@ -1,9 +1,13 @@
 """FatSecret MCP server — FastMCP v3 with all tools."""
 
+import json
+
 from fastmcp import FastMCP
+from fastmcp.exceptions import ToolError
 from fastmcp.tools import ToolResult
 from mcp.types import TextContent
 
+from fatsecret_mcp.api import FatSecretClient
 from fatsecret_mcp.config import load_config, save_config
 
 
@@ -41,5 +45,53 @@ def create_server() -> FastMCP:
             f"User ID: {user_id}"
         )
         return ToolResult(content=[TextContent(type="text", text=text)])
+
+    @mcp.tool()
+    def start_oauth_flow(callbackUrl: str = "oob") -> ToolResult:
+        """Start the 3-legged OAuth flow to get user authorization."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first using set_credentials")
+        try:
+            client = FatSecretClient(cfg["clientId"], cfg["clientSecret"])
+            resp = client.request_token(callback_url=callbackUrl)
+            token = resp.get("oauth_token", "")
+            token_secret = resp.get("oauth_token_secret", "")
+            auth_url = client.get_authorize_url(token)
+            text = (
+                f"OAuth flow started successfully!\n\n"
+                f"Request Token: {token}\nRequest Token Secret: {token_secret}\n\n"
+                f"Please visit this URL to authorize the application:\n{auth_url}\n\n"
+                "After authorization, you'll receive a verifier code. Use the complete_oauth_flow tool "
+                "with the request token, request token secret, and verifier to complete the authentication."
+            )
+            return ToolResult(content=[TextContent(type="text", text=text)])
+        except Exception as e:
+            raise ToolError(f"Failed to start OAuth flow: {e}") from e
+
+    @mcp.tool()
+    def complete_oauth_flow(
+        requestToken: str, requestTokenSecret: str, verifier: str
+    ) -> ToolResult:
+        """Complete the OAuth flow with the authorization code/verifier."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = FatSecretClient(cfg["clientId"], cfg["clientSecret"])
+            resp = client.exchange_token(requestToken, requestTokenSecret, verifier)
+            cfg["accessToken"] = resp.get("oauth_token", "")
+            cfg["accessTokenSecret"] = resp.get("oauth_token_secret", "")
+            cfg["userId"] = resp.get("user_id", "")
+            save_config(cfg)
+            user_id = cfg.get("userId", "")
+            text = (
+                f"OAuth flow completed successfully! You are now authenticated with FatSecret.\n\n"
+                f"User ID: {user_id}\n\n"
+                "You can now use user-specific tools like get_user_profile, get_user_food_entries, and add_food_entry."
+            )
+            return ToolResult(content=[TextContent(type="text", text=text)])
+        except Exception as e:
+            raise ToolError(f"Failed to complete OAuth flow: {e}") from e
 
     return mcp

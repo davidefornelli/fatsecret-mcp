@@ -15,3 +15,11 @@ def test_server_has_set_credentials_tool():
 
 def test_server_has_check_auth_status_tool():
     assert "check_auth_status" in _tool_names()
+
+
+def test_server_has_start_oauth_flow_tool():
+    assert "start_oauth_flow" in _tool_names()
+
+
+def test_server_has_complete_oauth_flow_tool():
+    assert "complete_oauth_flow" in _tool_names()
