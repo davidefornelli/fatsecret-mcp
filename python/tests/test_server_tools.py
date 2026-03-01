@@ -1,6 +1,10 @@
 import asyncio
+from unittest.mock import patch
+
+import pytest
 
 from fatsecret_mcp.server import create_server
+from fastmcp.exceptions import ToolError
 
 
 def _tool_names():
@@ -42,3 +46,32 @@ def test_server_has_all_twelve_tools():
         "get_weight_month",
     }
     assert expected == set(names), f"Missing or extra tools: {set(names) ^ expected}"
+
+
+async def _call_tool(name: str, arguments: dict):
+    mcp = create_server()
+    # Resolve and run the tool
+    tools = await mcp.list_tools()
+    tool = next((t for t in tools if t.name == name), None)
+    assert tool is not None
+    result = await tool.run(arguments)
+    return result
+
+
+def test_search_foods_without_credentials_raises():
+    """Without credentials set, search_foods should raise ToolError with clear message."""
+    with patch("fatsecret_mcp.server.load_config", return_value={"clientId": "", "clientSecret": ""}):
+        with pytest.raises(ToolError) as exc_info:
+            asyncio.run(_call_tool("search_foods", {"searchExpression": "apple"}))
+        assert "credentials" in str(exc_info.value).lower()
+
+
+def test_get_user_profile_without_oauth_raises():
+    """Without OAuth, get_user_profile should raise ToolError (user authentication required)."""
+    with patch("fatsecret_mcp.server.load_config", return_value={
+        "clientId": "a", "clientSecret": "b",
+        "accessToken": "", "accessTokenSecret": "", "userId": "",
+    }):
+        with pytest.raises(ToolError) as exc_info:
+            asyncio.run(_call_tool("get_user_profile", {}))
+        assert "authentication" in str(exc_info.value).lower() or "oauth" in str(exc_info.value).lower()
