@@ -146,3 +146,68 @@ class FatSecretClient:
             {"method": "food.get", "food_id": food_id},
             use_access_token=False,
         )
+
+    def search_recipes(
+        self,
+        search_expression: str,
+        page_number: int = 0,
+        max_results: int = 20,
+    ) -> dict:
+        return self.api_request(
+            {
+                "method": "recipes.search",
+                "search_expression": search_expression,
+                "page_number": str(page_number),
+                "max_results": str(max_results),
+            },
+            use_access_token=False,
+        )
+
+    def get_recipe(self, recipe_id: str) -> dict:
+        return self.api_request(
+            {"method": "recipe.get", "recipe_id": recipe_id},
+            use_access_token=False,
+        )
+
+    def get_user_profile(self) -> dict:
+        return self.api_request(
+            {"method": "profile.get"},
+            use_access_token=True,
+        )
+
+    def get_food_entries(self, date_str: str | None = None) -> dict:
+        from fatsecret_mcp.dates import date_to_fatsecret_format
+        date_param = date_to_fatsecret_format(date_str)
+        return self.api_request(
+            {"method": "food_entries.get", "date": date_param},
+            use_access_token=True,
+        )
+
+    def add_food_entry(
+        self,
+        food_id: str,
+        serving_id: str,
+        quantity: float,
+        meal_type: str,
+        date_str: str | None = None,
+    ) -> dict:
+        from fatsecret_mcp.dates import date_to_fatsecret_format
+        date_param = date_to_fatsecret_format(date_str)
+        return self.api_post(
+            {
+                "method": "food_entry.create",
+                "food_id": food_id,
+                "serving_id": serving_id,
+                "quantity": str(int(quantity) if quantity == int(quantity) else quantity),
+                "meal": meal_type,
+                "date": date_param,
+            }
+        )
+
+    def get_weight_month(self, date_str: str | None = None) -> dict:
+        from fatsecret_mcp.dates import date_to_fatsecret_format
+        date_param = date_to_fatsecret_format(date_str)
+        return self.api_request(
+            {"method": "weights.get_month", "date": date_param},
+            use_access_token=True,
+        )

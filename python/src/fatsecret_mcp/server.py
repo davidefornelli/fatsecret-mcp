@@ -94,4 +94,157 @@ def create_server() -> FastMCP:
         except Exception as e:
             raise ToolError(f"Failed to complete OAuth flow: {e}") from e
 
+    @mcp.tool()
+    def search_foods(
+        searchExpression: str,
+        pageNumber: int = 0,
+        maxResults: int = 20,
+    ) -> ToolResult:
+        """Search for foods in the FatSecret database."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = FatSecretClient(cfg["clientId"], cfg["clientSecret"])
+            resp = client.search_foods(searchExpression, pageNumber, maxResults)
+            return ToolResult(
+                content=[TextContent(type="text", text=json.dumps(resp, indent=2))]
+            )
+        except Exception as e:
+            raise ToolError(f"Failed to search foods: {e}") from e
+
+    @mcp.tool()
+    def get_food(foodId: str) -> ToolResult:
+        """Get detailed information about a specific food item."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = FatSecretClient(cfg["clientId"], cfg["clientSecret"])
+            resp = client.get_food(foodId)
+            return ToolResult(
+                content=[TextContent(type="text", text=json.dumps(resp, indent=2))]
+            )
+        except Exception as e:
+            raise ToolError(f"Failed to get food: {e}") from e
+
+    @mcp.tool()
+    def search_recipes(
+        searchExpression: str,
+        pageNumber: int = 0,
+        maxResults: int = 20,
+    ) -> ToolResult:
+        """Search for recipes in the FatSecret database."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = FatSecretClient(cfg["clientId"], cfg["clientSecret"])
+            resp = client.search_recipes(searchExpression, pageNumber, maxResults)
+            return ToolResult(
+                content=[TextContent(type="text", text=json.dumps(resp, indent=2))]
+            )
+        except Exception as e:
+            raise ToolError(f"Failed to search recipes: {e}") from e
+
+    @mcp.tool()
+    def get_recipe(recipeId: str) -> ToolResult:
+        """Get detailed information about a specific recipe."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = FatSecretClient(cfg["clientId"], cfg["clientSecret"])
+            resp = client.get_recipe(recipeId)
+            return ToolResult(
+                content=[TextContent(type="text", text=json.dumps(resp, indent=2))]
+            )
+        except Exception as e:
+            raise ToolError(f"Failed to get recipe: {e}") from e
+
+    def _user_client(cfg: dict) -> FatSecretClient:
+        if not cfg.get("accessToken") or not cfg.get("accessTokenSecret"):
+            raise ToolError(
+                "User authentication required. Please complete the OAuth flow first."
+            )
+        return FatSecretClient(
+            cfg["clientId"],
+            cfg["clientSecret"],
+            access_token=cfg.get("accessToken"),
+            access_token_secret=cfg.get("accessTokenSecret"),
+        )
+
+    @mcp.tool()
+    def get_user_profile() -> ToolResult:
+        """Get the authenticated user's profile information."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = _user_client(cfg)
+            resp = client.get_user_profile()
+            return ToolResult(
+                content=[TextContent(type="text", text=json.dumps(resp, indent=2))]
+            )
+        except ToolError:
+            raise
+        except Exception as e:
+            raise ToolError(f"Failed to get user profile: {e}") from e
+
+    @mcp.tool()
+    def get_user_food_entries(date: str | None = None) -> ToolResult:
+        """Get user's food diary entries for a specific date."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = _user_client(cfg)
+            resp = client.get_food_entries(date)
+            return ToolResult(
+                content=[TextContent(type="text", text=json.dumps(resp, indent=2))]
+            )
+        except ToolError:
+            raise
+        except Exception as e:
+            raise ToolError(f"Failed to get food entries: {e}") from e
+
+    @mcp.tool()
+    def add_food_entry(
+        foodId: str,
+        servingId: str,
+        quantity: float,
+        mealType: str,
+        date: str | None = None,
+    ) -> ToolResult:
+        """Add a food entry to the user's diary."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = _user_client(cfg)
+            resp = client.add_food_entry(foodId, servingId, quantity, mealType, date)
+            text = f"Food entry added successfully!\n\n{json.dumps(resp, indent=2)}"
+            return ToolResult(content=[TextContent(type="text", text=text)])
+        except ToolError:
+            raise
+        except Exception as e:
+            raise ToolError(f"Failed to add food entry: {e}") from e
+
+    @mcp.tool()
+    def get_weight_month(date: str | None = None) -> ToolResult:
+        """Get user's weight entries for a specific month."""
+        cfg = load_config()
+        if not cfg.get("clientId") or not cfg.get("clientSecret"):
+            raise ToolError("Please set your FatSecret API credentials first")
+        try:
+            client = _user_client(cfg)
+            resp = client.get_weight_month(date)
+            return ToolResult(
+                content=[TextContent(type="text", text=json.dumps(resp, indent=2))]
+            )
+        except ToolError:
+            raise
+        except Exception as e:
+            raise ToolError(f"Failed to get weight entries for month: {e}") from e
+
     return mcp
